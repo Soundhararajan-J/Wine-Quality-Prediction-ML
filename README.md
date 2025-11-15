@@ -1,78 +1,68 @@
 # Wine-Quality-Prediction-ML
-# -Wine-Quality-Prediction-Using-Machine-Learning-# 
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
 
-## 📌 Project Overview
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import SGDClassifier
+from sklearn.svm import SVC
+from sklearn.metrics import classification_report, confusion_matrix
 
-This project focuses on predicting the quality of wine based on various chemical properties. By applying machine learning classification algorithms, we aim to accurately categorize wine samples into quality levels. This real-world dataset is widely used in viticulture analytics and provides a great foundation for hands-on machine learning practice.
+df = pd.read_csv("WineQT.csv") 
 
----
+print("\n Data Loaded")
+print(df.head())
 
-## 🧠 Objective
+if 'Id' in df.columns:
+    df.drop('Id', axis=1, inplace=True)
 
-To build and evaluate predictive models that classify wine quality using chemical characteristics such as acidity, alcohol content, and density.
+print("\n Checking for nulls:")
+print(df.isnull().sum())
 
----
+plt.figure(figsize=(10, 8))
+sns.heatmap(df.corr(), annot=True, cmap="coolwarm", fmt=".2f")
+plt.title(" Feature Correlation Heatmap")
+plt.tight_layout()
+plt.show()
 
-## 📂 Dataset
+X = df.drop("quality", axis=1)
+y = df["quality"]
 
-- **Source**: UCI Machine Learning Repository – [Wine Quality Dataset](https://archive.ics.uci.edu/ml/datasets/Wine+Quality)
-- **Attributes**: 12 chemical features (e.g., fixed acidity, volatile acidity, citric acid, residual sugar, alcohol, etc.)
-- **Target**: Wine quality score (0–10)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
----
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
 
-## 🔧 Tools & Libraries Used
+rf = RandomForestClassifier(random_state=42)
+rf.fit(X_train_scaled, y_train)
+rf_pred = rf.predict(X_test_scaled)
 
-- **Python**
-- **Pandas** – for data manipulation
-- **NumPy** – for numerical operations
-- **Matplotlib / Seaborn** – for data visualization
-- **Scikit-learn** – for machine learning models
+sgd = SGDClassifier(max_iter=1000, tol=1e-3, random_state=42)
+sgd.fit(X_train_scaled, y_train)
+sgd_pred = sgd.predict(X_test_scaled)
 
----
+svc = SVC()
+svc.fit(X_train_scaled, y_train)
+svc_pred = svc.predict(X_test_scaled)
 
-## 🔍 Key Steps
+print("\n Random Forest Classifier:")
+print(classification_report(y_test, rf_pred))
 
-### 1. Data Exploration & Cleaning
-- Load the dataset using Pandas
-- Handle missing values (if any)
-- Analyze distributions and correlations
+print("\n Stochastic Gradient Descent Classifier:")
+print(classification_report(y_test, sgd_pred))
 
-### 2. Feature Engineering
-- Normalize/scale features
-- Identify important predictors based on correlation
+print("\n Support Vector Classifier:")
+print(classification_report(y_test, svc_pred))
 
-### 3. Model Building
-Applied the following classification algorithms:
-- 🎯 **Random Forest Classifier**
-- 🌀 **Stochastic Gradient Descent Classifier**
-- 🔍 **Support Vector Classifier (SVC)**
+plt.figure(figsize=(6, 5))
+sns.heatmap(confusion_matrix(y_test, rf_pred), annot=True, cmap='Blues', fmt='d')
+plt.title(" Confusion Matrix - Random Forest")
+plt.xlabel("Predicted")
+plt.ylabel("Actual")
+plt.tight_layout()
+plt.show()
 
-### 4. Model Evaluation
-- Used **accuracy**, **confusion matrix**, and **classification report**
-- Compared model performances to find the most efficient classifier
-
-### 5. Data Visualization
-- Visualized feature importance
-- Correlation heatmaps
-- Accuracy comparison chart
-
----
-
-## 📊 Results & Insights
-
-- **Random Forest** showed the best performance in terms of accuracy and robustness.
-- Chemical properties like **alcohol**, **volatile acidity**, and **sulphates** played a significant role in quality prediction.
-- Clear patterns between alcohol content and wine quality were observed.
-
----
-
-## 🚀 Learning Outcomes
-
-- Practical understanding of classification algorithms
-- Enhanced data preprocessing and cleaning techniques
-- Visualizing and interpreting model performance
-
----
-
-## 📁 Project Structure
